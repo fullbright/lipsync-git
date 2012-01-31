@@ -1,0 +1,32 @@
+#!/bin/sh
+
+#
+### Executes when a new file is added to the watched repository
+#
+
+PARAM_CONF_FILE=/opt/lipsync-git/etc/lipsync-git.conf
+
+######
+# Load parameters
+######
+if [ -e $PARAM_CONF_FILE ]; then
+        . $PARAM_CONF_FILE
+else
+	echo "****** ERROR ******* : The configuration file $PARAM_CONF_FILE does not exist !"
+fi
+
+srcpathname=$1
+destfilename=$2
+orgdir=$PWD
+srcdir=$3
+
+echo "Entrering directory $srcdir" >> $LOGFILE
+cd $srcdir
+
+
+# Then add 
+echo "Modifying file $filepathname to repository"
+git mv $srcpathname $destpathname >> $LOGFILE
+
+# Filnally go back to original dir
+echo "Changing to directory $orgdir" >> $LOGFILE

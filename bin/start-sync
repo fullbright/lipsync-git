@@ -1,0 +1,42 @@
+#!/bin/sh
+
+#
+### Executes when a new file is added to the watched repository
+#
+
+PARAM_CONF_FILE=/opt/lipsync-git/etc/lipsync-git.conf
+
+######
+# Load parameters
+######
+if [ -e $PARAM_CONF_FILE ]; then
+        . $PARAM_CONF_FILE
+else
+	echo "****** ERROR ******* : The configuration file $PARAM_CONF_FILE does not exist !"
+fi
+
+echo "Current directory is : "${PWD}
+orgdir=`echo ${PWD}`
+srcdir=$1
+
+echo "Starting repository $srcdir" >> $LOGFILE
+
+echo "Entrering directory $srcdir" >> $LOGFILE
+cd $srcdir
+
+gitdirectory=$srcdir".git"
+echo "Checking if there is a .git folder (folder is under version control)"  >> $LOGFILE
+echo "Checking if directory $gitdirectory exists."
+
+if [ -d "$gitdirectory" ]; then
+    echo "$gitdirectory exists. No need to init git repository" >> $LOGFILE
+else
+    echo "Directory doesn't exist. Init git repository!!!"  >> $LOGFILE
+    git init $srcdir
+fi
+
+
+git status >> $LOGFILE
+
+# Filnally go back to original dir
+echo "Changing to directory $orgdir" >> $LOGFILE

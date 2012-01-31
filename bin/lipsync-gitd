@@ -1,0 +1,42 @@
+#!/bin/sh -e
+# Distributed under the terms of the BSD License.
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+### BEGIN INIT INFO
+# Provides:          lipsync-gitd
+# Required-Start:    $syslog $local_fs
+# Required-Stop:     $syslog $local_fs
+# Should-Start:      dbus avahi
+# Should-Stop:       dbus avahi
+# Default-Start:     2 3 4 5
+# Default-Stop:      1
+# Short-Description: a service that provides automated, command-line syncing
+### END INIT INFO
+
+PARAM_CONF_FILE=/opt/lipsync-git/etc/lipsync-git.conf
+
+######
+# Load parameters
+######
+if [ -e $PARAM_CONF_FILE ]; then
+        . $PARAM_CONF_FILE
+else
+	echo "****** ERROR ******* : The configuration file $PARAM_CONF_FILE does not exist !"
+fi
+
+case "$1" in
+  start)
+	echo "$NAME is starting..."
+	lsyncd -log $LOGLEVEL -logfile $LOGFILE -pidfile $PIDFILE $CONFFILE
+	;;
+  stop)
+	echo "TODO - Write stop script"
+	;;
+  *)
+	echo "TODO - Write default action script"
+	;;
+
+esac
+
+exit 0
