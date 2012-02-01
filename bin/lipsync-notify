@@ -1,0 +1,44 @@
+#!/bin/bash 
+# Distributed under the terms of the BSD License.
+# Copyright (c) 2011 Phil Cryer phil.cryer@gmail.com
+# Source https://github.com/philcryer/lipsync
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+PARAM_CONF_FILE=/opt/lipsync-git/etc/lipsync-git.conf
+
+###############
+# source config, define logfile
+###############
+if [ -e $PARAM_CONF_FILE ]; then
+        . $PARAM_CONF_FILE
+else
+	echo "****** ERROR ******* : The configuration file $PARAM_CONF_FILE does not exist !"
+fi
+
+SYSTEM=`uname`
+
+MESSAGE="${1}"
+
+echo "Trying to display message : $MESSAGE"
+
+if [ ${SYSTEM} == 'Linux' ]; then
+	if which notify-send > /dev/null; then
+                # Prevent notification to crash if we are not in graphical mode
+		set +e
+  		DISPLAY=:0.0 notify-send --icon=$NOTIFY_ICON --expire-time=1 "$NAME" "${MESSAGE}"
+		set -e
+		echo "I continue my code here."
+	elif which zenity > /dev/null; then
+		echo 'message:lipsync '${MESSAGE}'' | DISPLAY=:0.0 zenity --notification --window-icon=$NOTIFY_ICON --listen
+	fi
+fi
+
+if [ ${SYSTEM} == 'Darwin' ]; then
+	if which growlnotify > /dev/null; then
+		growlnotify -i $NOTIFY_ICON $NAME -m ''${MESSAGE}''
+	fi
+fi
+
+echo "Done."
+
+exit 0

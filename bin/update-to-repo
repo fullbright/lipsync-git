@@ -1,0 +1,66 @@
+#!/bin/sh
+
+#
+### Decided if it must commit and/or push to upstream
+#
+
+PARAM_CONF_FILE=/opt/lipsync-git/etc/lipsync-git.conf
+
+######
+# Load parameters
+######
+if [ -e $PARAM_CONF_FILE ]; then
+        . $PARAM_CONF_FILE
+else
+	echo "****** ERROR ******* : The configuration file $PARAM_CONF_FILE does not exist !"
+fi
+
+echo "Current directory is : "${PWD}
+orgdir=`echo ${PWD}`
+srcdir=$1
+
+echo "Updating repository $srcdir" >> $LOGFILE
+
+echo "Entrering directory $srcdir" >> $LOGFILE
+cd $srcdir
+
+###############
+# count deleted files since LAST_RUN
+###############
+NEW_FILES=`git status | grep "new file:"| wc -l`
+MODIFIED_FILES=`git status | grep "modified:"| wc -l`
+NEWANDMODFILES=$(($NEW_FILES+$MODIFIED_FILES))
+
+echo "Number of new + modified files : $NEWANDMODFILES"
+NOTIFMSG=$NEW_FILES" new files\n"
+NOTIFMSG=$NOTIFMSG""$MODIFIED_FILES" modified files\n"
+
+
+if [ $NEWANDMODFILES -gt $NBMODIFIEDFILESTOCOMMIT ]; then
+    echo "Reached the amount of modified $NEW_FILES files. Comitting ..." >> $LOGFILE
+    #$NOTIFYBIN "Reached the amount of modified $NEW_FILES files. Comitting ..."
+    COMMITMSG="Commit $NEWANDMODFILES files. Time stamp: `date "+%a %b %d %T %Y"`"
+    git commit -m "${COMMITMSG}"
+    NOTIFMSG=$NOTIFMSG"1 commit ($COMMITMSG)\n"
+else
+    echo "The amount of modified $NEW_FILES files is not reached. NOT Comitting ..." >> $LOGFILE
+    NOTIFMSG=$NOTIFMSG"No commit\n"
+fi
+
+if [ $NEWANDMODFILES -gt $NBMODIFIEDTOPUSH ]; then
+    echo "Reached the amount of modified $MODIFIED_FILES files. Pushing to upstream ..." >> $LOGFILE
+    #$NOTIFYBIN "Reached the amount of modified $MODIFIED_FILES files. Pushing to upstream ..."
+    #git push origin master
+    NOTIFMSG=$NOTIFMSG"Changes pushed to repository\n"
+else
+    echo "The amount of modified $MODIFIED_FILES files is not reached. NOT pushing to upstream ..." >> $LOGFILE
+    NOTIFMSG=$NOTIFMSG"Nothing pushed to repository"
+fi
+
+echo "Notif message : $NOTIFMSG"
+$NOTIFYBIN "${NOTIFMSG}"
+
+git status >> $LOGFILE
+
+# Filnally go back to original dir
+echo "Changing to directory $orgdir" >> $LOGFILE
