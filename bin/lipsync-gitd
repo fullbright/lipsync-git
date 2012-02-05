@@ -28,13 +28,68 @@ fi
 case "$1" in
   start)
 	echo "$NAME is starting..."
-	lsyncd -log $LOGLEVEL -logfile $LOGFILE -pidfile $PIDFILE $CONFFILE
+	echo "Executing : su $USER_NAME -c $DAEMON -log $LOGLEVEL -logfile $LOGFILE -pidfile $PIDFILE $CONFFILE"
+	su $USER_NAME -c "$DAEMON -log $LOGLEVEL -logfile $LOGFILE -pidfile $PIDFILE $CONFFILE"
+	echo "$NAME has started."
+	;;
+  status)
+	echo "Checking $NAME status ..."
+	echo "Checking PID file $PIDFILE"
+	if [ -f $PIDFILE ] ; then
+		echo "  There is a PID file ! PID is `cat $PIDFILE`"
+		echo "  $NAME might be running. We will check that in the next steps."
+	else
+		echo "  No $PIDFILE not found. $NAME might not be running."
+	fi
+
+	echo "Checking if daemon $NAME is running"
+	NBPROCESS=`ps aux | grep $NAME | grep $DAEMON | grep -v grep | wc -l`
+
+	if [ $NBPROCESS -gt 0 ]; then
+		echo "  There is $NBPROCESS running for $NAME"
+	else
+		echo "  No process found for daemon $DAEMON"
+	fi		
+	echo "done"
 	;;
   stop)
-	echo "TODO - Write stop script"
+	set +e
+	echo "Stopping $NAME daemon..." >> $LOGFILE
+	echo "`date "+%a %b %d %T %Y"` Daemon: $NAME is stopping" >> $LOGFILE
+	
+	######## Killing daemon
+	echo "   Killing all $DAEMON ... " >> $LOGFILE
+	echo "       Removing PID file for $NAME ... " >> $LOGFILE
+	if [ -f $PIDFILE ] ; then
+		echo "       PID file found." >> $LOGFILE
+		echo -n "       Killing process with PID `cat $PIDFILE` ... " >> $LOGFILE
+		kill -9 `cat $PIDFILE`		
+		echo "       done." >> $LOGFILE
+
+		echo -n "       Removing PID file ..." >> $LOGFILE
+		rm $PIDFILE
+		echo "       done." >> $LOGFILE
+
+	else
+		echo "       Fail. $PIDFILE not found." >> $LOGFILE
+		echo "       Trying to kill all $NAME processes" >> $LOGFILE
+		NBPROCESS=`ps aux | grep $NAME | grep -v grep | wc -l`
+
+		if [ $NBPROCESS -gt 0 ]; then
+			#ps aux | grep $UPDATER_DAEMON | grep -v grep | awk '{print $2}' | xargs kill -9
+			ps aux | grep $NAME | grep $DAEMON | grep -v grep | awk '{print $2}' | xargs kill -9
+			#killall $DAEMON`
+		else
+			echo "       No process found for daemon $NAME" >> $LOGFILE
+		fi
+		
+		echo "       done" >> $LOGFILE
+	fi
 	;;
   *)
-	echo "TODO - Write default action script"
+	N=/etc/init.d/$NAME
+	echo "Usage: $N {start|stop|restart|force-reload}" >&2
+	exit 1
 	;;
 
 esac

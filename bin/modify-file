@@ -26,5 +26,8 @@ cd $srcdir
 echo "Modifying file $filepathname to repository"
 git status >> $LOGFILE
 
+#Check if we must commit or push to upstream
+$UPDATEBIN $srcdir
+
 # Filnally go back to original dir
 echo "Changing to directory $orgdir" >> $LOGFILE

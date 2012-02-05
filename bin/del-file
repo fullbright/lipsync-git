@@ -27,8 +27,11 @@ cd $srcdir
 
 # Then add 
 echo "Modifying file $filepathname to repository" >> $LOGFILE
-git rm $filepathname >> $LOGFILE
-rm -rf $filepathname >> $LOGFILE
+git rm "${filepathname}" >> $LOGFILE
+rm -rf "${filepathname}" >> $LOGFILE
+
+#Check if we must commit or push to upstream
+$UPDATEBIN $srcdir
 
 # Filnally go back to original dir
 echo "Changing to directory $orgdir" >> $LOGFILE

@@ -57,10 +57,23 @@ else
     NOTIFMSG=$NOTIFMSG"Nothing pushed to repository"
 fi
 
-echo "Notif message : $NOTIFMSG"
+echo "Notif message : $NOTIFMSG" >> $LOGFILE
 $NOTIFYBIN "${NOTIFMSG}"
 
 git status >> $LOGFILE
+
+#Checking if git versioning files are too big
+GITSIZE=`du -s $srcdir.git/ | awk '{print $1}'`
+REPOSIZE=`du -s $srcdir | awk '{print $1}'`
+
+PERCENTGIT=$(($GITSIZE*100/$REPOSIZE))
+echo "Git size is : $GITSIZE, Repo size is: $REPOSIZE, Percentage : $PERCENTGIT" >> $LOGFILE
+
+if [ $PERCENTGIT -gt $GITCLEANPERCENT ]; then
+     echo "-------------------- Percentage reached. Cleanning repository ..." >> $LOGFILE
+else
+     echo "-------------------- Percentage not reached. Nothing to clean." >> $LOGFILE
+fi
 
 # Filnally go back to original dir
 echo "Changing to directory $orgdir" >> $LOGFILE

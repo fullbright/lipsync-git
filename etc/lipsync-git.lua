@@ -12,7 +12,7 @@ offlinegit = {
     ---onDelete = "/opt/lipsync-git/bin/del-file ^targetPathname ^source",
     onDelete = "/opt/lipsync-git/bin/del-file ^sourcePath ^source",
 
-    onMove   = "/opt/lipsync-git/bin/move-file ^o.targetPathname ^d.targetPathname ^source",
+    onMove   = "/opt/lipsync-git/bin/move-file ^o.sourcePathname ^d.sourcePathname ^source",
 
     ---onStartup = [[if [ "$(ls -A ^source)" ]; then cp -r ^source* ^target; fi]],
     onStartup = "/opt/lipsync-git/bin/start-sync ^source",
@@ -23,6 +23,6 @@ sync{
 	source="/home/fullbright/my-lipsync-git/", 
 	host="sergio@home.afanou.com", 
 	targetdir="/home/sergio/mydropbox/",
-	exclude=".git",
+	excludeFrom="/opt/lipsync-git/etc/exclude_rules.conf",
 	rsyncOpts="-ltus"
 }
